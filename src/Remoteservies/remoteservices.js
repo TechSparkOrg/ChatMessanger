@@ -4,7 +4,12 @@ const address = 'http://127.0.0.1:5173/api';
 
 const getRequest = async (url, data) => {
     try {
-        const response = await axios.get(url,data);
+        const response = await axios.get(url,{
+            params: data,
+            headers:{
+                'Authorization': `Token ${localStorage.getItem('token')}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -24,11 +29,11 @@ const postRequest = async (url, data) => {
 
 const RemoteServices = {
     loginPost: function (data) {
-        const url = `${address}/login/`;
+        const url = `${address}/account/login/`;
         return postRequest(url, data);
     },
     Registration: function (data) {
-        const url = `${address}/register/`;
+        const url = `${address}/account/register/`;
         return postRequest(url, data);
     },
     UploadContent: function (data) {

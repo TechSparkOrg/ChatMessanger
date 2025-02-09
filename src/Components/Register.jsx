@@ -54,7 +54,7 @@ const Register = () => {
       const response = await RemoteServices.Registration(formData);
      
 
-      if (response.ok) {
+      if (response.status === 201) {
         toast({
           title: 'Registration Successful',
           description: 'Please login with your credentials',
@@ -62,7 +62,7 @@ const Register = () => {
           duration: 3000,
           isClosable: true,
         });
-        navigate('/login');
+        navigate('/');
       } else {
         const error = await response.json();
         toast({
@@ -85,7 +85,7 @@ const Register = () => {
   };
 
   const handleLoginClick = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (

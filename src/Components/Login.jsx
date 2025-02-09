@@ -46,6 +46,7 @@ const Login = () => {
         if (response.status ===200) {
           // Store the token in local storage
           localStorage.setItem('token', response.token);
+          localStorage.setItem('user',JSON.stringify(response.user));
           toast({
             title: 'Login successful',
             description: 'Welcome back! Redirecting to chat...',
