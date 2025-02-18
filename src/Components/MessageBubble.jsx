@@ -1,49 +1,75 @@
-const MessageBubble = ({ message }) => {
-  const isSelf = message.from === 'self';
-  const statusColor = message.status === MESSAGE_STATUS.READ ? '#34B7F1' : 'currentColor';
+import React, { memo, useMemo } from "react";
+import PropTypes from "prop-types";
+import { Box, HStack, Text } from "@chakra-ui/react";
+import MediaDisplay from "./MediaDisplay";
+import { MESSAGE_STATUS } from "../constants/chatStyles";
+import { BsCheck2All, BsCheck2 } from "react-icons/bs";
+import { BiTime } from "react-icons/bi";
 
-  return (
-    <Box
-      maxW={message.media ? '400px' : CHAT_STYLES.messageBubble.maxWidth}
-      ml={isSelf ? 'auto' : 0}
-      bg={message.media ? 'transparent' : isSelf ? CHAT_STYLES.colors.messageSelf : CHAT_STYLES.colors.messageOther}
-      color={isSelf ? 'white' : 'black'}
-      borderRadius="lg"
-      p={message.media ? 0 : 3}
-      position="relative"
-      transition="transform 0.2s ease"
-      _hover={{ transform: 'scale(1.01)' }}
-    >
-      {message.media ? (
-        <Box bg="transparent">
-          {message.media.length === 1 ? (
-            <MediaPreview
-              type={message.media[0].type}
-              content={message.media[0].content}
-              fileName={message.media[0].fileName}
-            />
-          ) : (
-            <MediaGrid media={message.media} />
-          )}
-        </Box>
-      ) : null}
-      
-      {message.text && (
-        <Box
-          bg={isSelf ? CHAT_STYLES.colors.messageSelf : CHAT_STYLES.colors.messageOther}
-          p={3}
-          borderRadius="lg"
-          mt={message.media ? 2 : 0}
-        >
-          <Text mb={1} fontSize="md" lineHeight="1.5">{message.text}</Text>
-        </Box>
-      )}
+// Memoized MessageBubble with display name
+const MessageBubble = memo(
+  (props) => {
+    const { message } = props;
+    
+    const userId = useMemo(() => JSON.parse(localStorage.getItem("user"))?.id, []);
+    const isSelf = (message.from || message.sender) === userId;
+  
+    return (
+      <Box maxW={message.media ? { base: "85%", md: "400px" } : "70%"} ml={isSelf ? "auto" : 0} bg="transparent">
+        {message.media && (
+          <Box mb={message.text ? 2 : 0} borderRadius="lg" overflow="hidden">
+            <MediaDisplay media={message.media} />
+          </Box>
+        )}
+        {message.text && (
+          <Box bg={isSelf ? "green.500" : "white"} color={isSelf ? "white" : "black"} p={3} borderRadius="lg" boxShadow="sm">
+            <Text>{message.text}</Text>
+          </Box>
+        )}
+        <HStack spacing={1} justify="flex-end" fontSize="xs" mt={1} opacity={0.8}>
+          <Text color={isSelf ? "white" : "gray.600"}>{message.time}</Text>
+          {isSelf && <MessageStatus status={message.status} />}
+        </HStack>
+      </Box>
+    );
+  },
+  (prevProps, nextProps) => JSON.stringify(prevProps.message) === JSON.stringify(nextProps.message)
+);
 
-      <HStack spacing={1} justify="flex-end" opacity={0.8} fontSize="xs" mt={1}>
-        {message.fileSize && <Text fontSize="xs" opacity={0.8} mr={2}>{message.fileSize}</Text>}
-        <Text color={isSelf ? 'white' : 'gray.600'}>{message.time}</Text>
-        {isSelf && <Box color={statusColor}><MessageStatus status={message.status} /></Box>}
-      </HStack>
-    </Box>
-  );
+// Memoized MessageStatus
+const MessageStatus = memo(({ status }) => {
+  switch (status) {
+    case MESSAGE_STATUS.PENDING:
+      return <BiTime />;
+    case MESSAGE_STATUS.SENT:
+      return <BsCheck2 />;
+    case MESSAGE_STATUS.DELIVERED:
+      return <BsCheck2All />;
+    case "read":
+      return <BsCheck2All color="#34B7F1" />;
+    default:
+      return null;
+  }
+});
+
+// Add Display Names
+MessageBubble.displayName = "MessageBubble";
+MessageStatus.displayName = "MessageStatus";
+
+// Prop Types
+MessageBubble.propTypes = {
+  message: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    text: PropTypes.string,
+    from: PropTypes.string,
+    time: PropTypes.string,
+    status: PropTypes.string,
+    media: PropTypes.array,
+  }).isRequired,
 };
+
+MessageStatus.propTypes = {
+  status: PropTypes.string.isRequired,
+};
+
+export default MessageBubble;

@@ -56,7 +56,7 @@ const Login = () => {
           })
           // Redirect to the home page
           navigate('/chat');
-        } else {
+        } else if(response.status ===400) {
           toast({
             title: 'Login failed',
             description: 'Please check your credentials and try again.',
@@ -70,7 +70,7 @@ const Login = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'An error occurred during login',
+        description: `${error.error}`,
         status: 'error',
         duration: 3000,
         isClosable: true,

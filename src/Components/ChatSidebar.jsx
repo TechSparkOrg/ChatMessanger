@@ -1,5 +1,5 @@
 // components/ChatSidebar/ChatSidebar.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   IconButton,
@@ -18,11 +18,12 @@ import { HamburgerIcon } from '@chakra-ui/icons';
 import SidebarHeader from './SidebarHeader';
 import SidebarContacts from './SidebarContacts';
 import ProfileModal from './ProfileModal';
+import RemoteServices from '../Remoteservies/remoteservices';
 
-const ChatSidebar = ({ onSelectContact, selectedContact }) => {
+const ChatSidebar = ({ onSelectContact, selectedContact,contacts }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
+  const [SearchData, setSearchData] = useState([])
   // Profile Modal controls
   const {
     isOpen: isProfileOpen,
@@ -30,82 +31,18 @@ const ChatSidebar = ({ onSelectContact, selectedContact }) => {
     onClose: onCloseProfile,
   } = useDisclosure();
 
-  // Dummy user info
-  const [user, setUser] = useState({
-    name: 'John Doe',
-    phone: '+1 (123) 456-7890',
-    email: 'john.doe@example.com',
-    followers: 100,
-    following: 50,
-    isFollowing: false,
-  });
+    const user =JSON.parse(localStorage.getItem('user'))
 
-  // Toggle follow/unfollow logic
-  const handleToggleFollow = () => {
-    setUser((prev) => ({ ...prev, isFollowing: !prev.isFollowing }));
-  };
-
-  // Example logout
-  const handleLogout = () => {
-    alert('Logged out!');
-    // Replace with your real logout flow
-  };
-
-  // Filtered contacts (dummy data)
-  const contacts = [
-    {
-      id: 1,
-      name: 'Alice',
-      lastMessage: 'See you later!',
-      time: '10:30 AM',
-      online: true,
-      lastMessageFrom: 'other',
-      unseenCount: 2,
-    },
-    {
-      id: 2,
-      name: 'Bob',
-      lastMessage: 'Thanks!',
-      time: '9:45 AM',
-      online: false,
-      lastMessageFrom: 'other',
-      unseenCount: 0,
-    },
-    {
-      id: 3,
-      name: 'Charlie',
-      lastMessage: 'Hello!',
-      time: 'Yesterday',
-      online: true,
-      lastMessageFrom: 'self',
-      lastMessageStatus: 'delivered',
-      unseenCount: 0,
-    },
-    {
-      id: 4,
-      name: 'David',
-      lastMessage: 'Let me know!',
-      time: '8:00 AM',
-      online: false,
-      lastMessageFrom: 'self',
-      lastMessageStatus: 'pending',
-      unseenCount: 0,
-    },
-    {
-      id: 5,
-      name: 'Eva',
-      lastMessage: 'Good night!',
-      time: '11:00 PM',
-      online: true,
-      lastMessageFrom: 'other',
-      unseenCount: 5,
-    },
-  ];
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Breakpoint check
+    useEffect(() => {
+      if (searchQuery.length > 0) {
+        RemoteServices.getSearchUser(searchQuery).then((data) => {
+    
+          setSearchData(data);
+        });
+      } else {
+        setSearchData([]);
+      }
+    }, [searchQuery]);
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Basic typography & color style
@@ -143,19 +80,29 @@ const ChatSidebar = ({ onSelectContact, selectedContact }) => {
       <SidebarHeader
         user={user}
         onOpenProfile={onOpenProfile}
-        handleToggleFollow={handleToggleFollow}
+      
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         typography={typography}
       />
 
-      <SidebarContacts
-        contacts={filteredContacts}
-        selectedContact={selectedContact}
-        onSelectContact={onSelectContact}
-        typography={typography}
-        maxHeight="calc(100vh - 280px)"
-      />
+     {SearchData.length > 0 ? (
+            <SidebarContacts
+              contacts={SearchData}
+              selectedContact={selectedContact}
+              onSelectContact={onSelectContact}
+              typography={typography}
+              maxHeight="calc(100vh - 280px)"
+            />
+          ) : (
+            <SidebarContacts
+              contacts={contacts}
+              selectedContact={selectedContact}
+              onSelectContact={onSelectContact}
+              typography={typography}
+              maxHeight="calc(100vh - 280px)"
+            />
+          )}
     </Box>
   );
 
@@ -203,8 +150,7 @@ const ChatSidebar = ({ onSelectContact, selectedContact }) => {
         isOpen={isProfileOpen}
         onClose={onCloseProfile}
         user={user}
-        handleToggleFollow={handleToggleFollow}
-        handleLogout={handleLogout}
+      
         typography={typography}
       />
     </>

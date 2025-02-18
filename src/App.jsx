@@ -5,6 +5,8 @@ import Login from './Components/Login';
 import Register from './Components/Register';
 import ChatRoom from './Components/ChatRoom';
 import ProtectedRoute from './Components/ProtectedRoute';
+import { SocketProvider } from './Remoteservies/socket';
+
 
 function App() {
   return (
@@ -20,7 +22,10 @@ function App() {
             path="/chat"
             element={
               <ProtectedRoute>
+                <SocketProvider>
                 <ChatRoom />
+                </SocketProvider>
+             
               </ProtectedRoute>
             }
           />

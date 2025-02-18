@@ -55,60 +55,7 @@ const SidebarHeader = ({
         />
       </HStack>
 
-      {/* Display user’s follow stats & follow button right below the title */}
-      <Box
-        p={3}
-        bg="white"
-        borderRadius="lg"
-        boxShadow="sm"
-        transition="all 0.3s ease"
-      >
-        <HStack justify="space-between">
-          <Box>
-            <Text
-              fontSize={typography.sizes.sm}
-              color="gray.500"
-              fontFamily={typography.body}
-              fontWeight="600"
-            >
-              Followers
-            </Text>
-            <Text
-              fontSize={typography.sizes.md}
-              fontWeight="700"
-              fontFamily={typography.heading}
-            >
-              {user.followers}
-            </Text>
-          </Box>
-          <Box>
-            <Text
-              fontSize={typography.sizes.sm}
-              color="gray.500"
-              fontFamily={typography.body}
-              fontWeight="600"
-            >
-              Following
-            </Text>
-            <Text
-              fontSize={typography.sizes.md}
-              fontWeight="700"
-              fontFamily={typography.heading}
-            >
-              {user.following}
-            </Text>
-          </Box>
-          <Button
-            size="sm"
-            colorScheme="blue"
-            onClick={handleToggleFollow}
-            variant={user.isFollowing ? 'solid' : 'outline'}
-            transition="all 0.2s ease"
-          >
-            {user.isFollowing ? 'Following' : 'Follow'}
-          </Button>
-        </HStack>
-      </Box>
+    
 
       {/* Search Field */}
       <InputGroup size="lg">

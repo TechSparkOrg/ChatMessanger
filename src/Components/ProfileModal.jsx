@@ -16,15 +16,24 @@ import {
   Divider,
   Button,
 } from '@chakra-ui/react';
+import RemoteServices from '../Remoteservies/remoteservices';
 
 const ProfileModal = ({
   isOpen,
   onClose,
-  user,
-  handleToggleFollow,
-  handleLogout,
+
+  
+ user,
   typography,
 }) => {
+
+  const handleLogout = () => {
+    RemoteServices.logoutcookies();
+    localStorage.clear();
+    window.location.href = '/';
+  }
+
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
@@ -69,7 +78,7 @@ const ProfileModal = ({
                 fontWeight="600"
                 fontFamily={typography.body}
               >
-                {user.phone}
+                {user.phone_number}
               </Text>
             </Box>
 
@@ -113,7 +122,7 @@ const ProfileModal = ({
               <Button
                 size="sm"
                 colorScheme="blue"
-                onClick={handleToggleFollow}
+             
                 variant={user.isFollowing ? 'solid' : 'outline'}
                 alignSelf="flex-end"
               >
