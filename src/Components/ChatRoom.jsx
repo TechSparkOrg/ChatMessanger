@@ -105,45 +105,66 @@ const ChatRoom = () => {
     });
   };
 
-  const handleMessage = useCallback((e) => {
-    const data = JSON.parse(e.data);
-    console.log("Socket message received:", data);
+  const handleMessage = useCallback(
+    (e) => {
+      const data = JSON.parse(e.data);
+      console.log("Socket message received:", data);
 
-    if (data.action_type === "message" && selectedContact) {
-      setMessages((prev) => [...prev, data]);
-    }
-
-    if (data.action_type === "delivery_status") {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          data.id === msg.id ? { ...msg, status: data.status } : msg
-        )
-      );
-    }
-
-    if (data.action_type === "typing") {
-      if (selectedContact?.id === data.from) {
-        setIsTyping(data.typing);
+      if (data.action_type === "message") {
+        if (selectedContact) {
+          setMessages((prev) => [...prev, data]);
+        }
+        if (data.to === JSON.parse(localStorage.getItem("user")).id) {
+          let delivery = {
+            action_type: "delivery_status",
+            id: data.id,
+            status:
+              selectedContact?.id === data.from 
+             
+                ? MESSAGE_STATUS.READ
+                : MESSAGE_STATUS.DELIVERED,
+            from: data.to,
+            to: data.from || data.sender,
+          };
+          socket.send(JSON.stringify(delivery));
+          setcontact((prev) =>
+            prev.map((contactID) =>
+              contactID.id === data.from
+                ? { ...contactID, last_message: data.text }
+                : contactID
+            )
+          );
+        }
       }
-    }
 
-    if (
-      data.to === JSON.parse(localStorage.getItem("user")).id &&
-      data.action_type === "message"
-    ) {
-      let delivery = {
-        action_type: "delivery_status",
-        id: data.id,
-        status:
-          selectedContact?.id === data.from || selectedContact?.id === data.sender
-            ? MESSAGE_STATUS.READ
-            : MESSAGE_STATUS.DELIVERED,
-        from: data.to,
-        to: data.from || data.sender,
-      };
-      socket.send(JSON.stringify(delivery));
-    }
-  }, [socket, selectedContact]);
+      if (data.action_type === "delivery_status") {
+       if(selectedContact){
+        setMessages((prev) =>
+          prev.map((msg) =>
+            data.id === msg.id ? { ...msg, status: data.status } : msg
+          )
+        );
+       }
+       if (data.to === JSON.parse(localStorage.getItem("user")).id )
+       {
+        setcontact((prev) =>
+          prev.map((contactID) =>
+            contactID.id === data.from
+              ? { ...contactID, delivery_status: data.status  }
+              : contactID
+          )
+        );
+       }
+      }
+
+      if (data.action_type === "typing") {
+        if (selectedContact?.id === data.from) {
+          setIsTyping(data.typing);
+        }
+      }
+    },
+    [socket, selectedContact]
+  );
 
   useEffect(() => {
     if (socket) {
@@ -353,7 +374,9 @@ const ChatRoom = () => {
                 <MediaDisplay
                   media={selectedMedia}
                   onRemove={(index) =>
-                    setSelectedMedia((prev) => prev.filter((_, i) => i !== index))
+                    setSelectedMedia((prev) =>
+                      prev.filter((_, i) => i !== index)
+                    )
                   }
                   isPreview={true}
                 />
