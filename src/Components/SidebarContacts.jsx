@@ -180,16 +180,8 @@ const SidebarContacts = ({
                   </HStack>
                 </HStack>
                 <HStack spacing={2}>
-                  {contact?.id === userid && (
-                    <Box
-                      color={
-                         typography?.colors?.muted
-                      }
-                    >
-                    you :
-                    </Box>
-                  )}
-                  {contact?.id !== userid  && (
+                  {/* Only show delivery status for messages sent by current user */}
+                  {(contact?.last_message_from.id === userid ) && (
                     <Box
                       color={
                         contact?.delivery_status === 'read'
@@ -211,6 +203,12 @@ const SidebarContacts = ({
                       )}
                     </Box>
                   )}
+                  {/* Show "you:" prefix only for messages sent by current user */}
+                  {/* {contact?.last_message_from.id === userid && (
+                    <Box color={typography?.colors?.muted}>
+                      you:
+                    </Box>
+                  )} */}
                   <Text
                     fontSize={typography?.sizes?.sm}
                     color={

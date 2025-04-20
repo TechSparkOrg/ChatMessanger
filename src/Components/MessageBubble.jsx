@@ -10,7 +10,7 @@ import { BiTime } from "react-icons/bi";
 const MessageBubble = memo(
   (props) => {
     const { message } = props;
-    
+    console.log('messss',message)
     const userId = useMemo(() => JSON.parse(localStorage.getItem("user"))?.id, []);
     const isSelf = (message.from || message.sender) === userId;
   
@@ -45,7 +45,7 @@ const MessageStatus = memo(({ status }) => {
       return <BsCheck2 />;
     case MESSAGE_STATUS.DELIVERED:
       return <BsCheck2All />;
-    case "read":
+    case MESSAGE_STATUS.READ:
       return <BsCheck2All color="#34B7F1" />;
     default:
       return null;

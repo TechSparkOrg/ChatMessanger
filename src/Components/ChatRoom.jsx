@@ -108,59 +108,69 @@ const ChatRoom = () => {
   const handleMessage = useCallback(
     (e) => {
       const data = JSON.parse(e.data);
-      console.log("Socket message received:", data);
+      const currentUserId = JSON.parse(localStorage.getItem("user")).id;
 
       if (data.action_type === "message") {
+        // Update messages if selected contact is relevant
         if (selectedContact) {
           setMessages((prev) => [...prev, data]);
         }
-        if (data.to === JSON.parse(localStorage.getItem("user")).id) {
-          let delivery = {
+
+        // Always update contact list for new messages
+        setcontact((prev) =>
+          prev.map((contact) => {
+            if (contact.id === (data.from === currentUserId ? data.to : data.from)) {
+              return {
+                ...contact,
+                last_message: data.text,
+                last_message_time: data.timestamp,
+                unread_count: data.from !== currentUserId ? 
+                  (contact.unread_count || 0) + 1 : 0,
+                last_message_from:{
+                  id:data.from 
+                    
+                },
+                delivery_status:data.status
+
+              };
+            }
+            return contact;
+          })
+        );
+
+        // Send delivery status
+        if (data.to === currentUserId) {
+          const delivery = {
             action_type: "delivery_status",
             id: data.id,
-            status:
-              selectedContact?.id === data.from 
-             
-                ? MESSAGE_STATUS.READ
-                : MESSAGE_STATUS.DELIVERED,
+            status: selectedContact?.id === data.from 
+              ? MESSAGE_STATUS.READ 
+              : MESSAGE_STATUS.DELIVERED,
             from: data.to,
             to: data.from || data.sender,
           };
           socket.send(JSON.stringify(delivery));
-          setcontact((prev) =>
-            prev.map((contactID) =>
-              contactID.id === data.from
-                ? { ...contactID, last_message: data.text }
-                : contactID
-            )
-          );
         }
       }
 
       if (data.action_type === "delivery_status") {
-       if(selectedContact){
+       console.log('delivery',data)
         setMessages((prev) =>
           prev.map((msg) =>
-            data.id === msg.id ? { ...msg, status: data.status } : msg
+            msg.id === data.id ? { ...msg, status: data.status } : msg
           )
         );
-       }
-       if (data.to === JSON.parse(localStorage.getItem("user")).id )
-       {
-        setcontact((prev) =>
-          prev.map((contactID) =>
-            contactID.id === data.from
-              ? { ...contactID, delivery_status: data.status  }
-              : contactID
-          )
-        );
-       }
-      }
 
-      if (data.action_type === "typing") {
-        if (selectedContact?.id === data.from) {
-          setIsTyping(data.typing);
-        }
+        // Update contact list delivery status
+        setcontact(prev =>
+          prev.map(contact =>
+            contact.id === (data.from === currentUserId
+              ? data.to
+              : data.from)
+              ? { ...contact, delivery_status: data.status }
+              : contact
+          )
+        );
       }
     },
     [socket, selectedContact]
